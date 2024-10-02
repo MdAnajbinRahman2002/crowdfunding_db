@@ -39,11 +39,11 @@
                 .then(response => response.json())
                 .then(data => {
                     const resultsList = document.getElementById('results-list');
-                    resultsList.innerHTML = '';  // Clear previous results
+                    resultsList.innerHTML = '';  
 
                     // Check if no results were returned from the API
                     if (data.length === 0) {
-                        resultsList.innerHTML = '<p class="text-danger font-weight-bold">No fundraisers found.</p>';
+                        resultsList.innerHTML = '<p class="text-danger font-weight-bold">No fundraisers found matching the search criteria.</p>';
                     } else {
                         // Display the fundraisers if they match the search criteria
                         data.forEach(fundraiser => {

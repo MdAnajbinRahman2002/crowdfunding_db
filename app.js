@@ -4,80 +4,89 @@ const cors = require('cors');
 
 // Set up MySQL connection
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Rihan123#',
-  database: 'crowdfunding_db'
+    host: 'localhost',
+    user: 'root',
+    password: 'Rihan123#',
+    database: 'crowdfunding_db'
 });
 
 connection.connect(err => {
-  if (err) {
-    return console.error('Error connecting to MySQL: ' + err.message);
-  }
-  console.log('Connected to MySQL.');
+    if (err) {
+        return console.error('Error connecting to MySQL: ' + err.message);
+    }
+    console.log('Connected to MySQL.');
 });
 
 const app = express();
 const port = 3000;
 
 app.use(cors());
-app.use(express.json());  // Enable JSON parsing middleware
 
-// Generic error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
+// API to get all active fundraisers (for index.html)
+app.get('/fundraisers', (req, res) => {
+    const sql = `
+        SELECT f.*, c.NAME as category_name
+        FROM FUNDRAISER f
+        JOIN CATEGORY c ON f.CATEGORY_ID = c.CATEGORY_ID
+        WHERE f.ACTIVE = true
+    `;
+
+    connection.query(sql, (error, results) => {
+        if (error) throw error;
+        res.json(results);
+    });
 });
 
-// API to get fundraisers, optionally filtered by ID or query parameters
-app.get('/fundraisers/:id?', (req, res) => {
-  let sql = `
-    SELECT f.*, c.NAME as category_name
-    FROM FUNDRAISER f
-    JOIN CATEGORY c ON f.CATEGORY_ID = c.CATEGORY_ID
-    WHERE f.ACTIVE = true
-  `;
+// API to get a single fundraiser by ID (for fundraiser.html)
+app.get('/fundraiser/:id', (req, res) => {
+    const sql = `
+        SELECT f.*, c.NAME as category_name
+        FROM FUNDRAISER f
+        JOIN CATEGORY c ON f.CATEGORY_ID = c.CATEGORY_ID
+        WHERE f.FUNDRAISER_ID = ?
+    `;
 
-  const params = [];
-  if (req.params.id) {
-    sql += ' AND f.FUNDRAISER_ID = ?';
-    params.push(req.params.id);
-  } else {
+    connection.query(sql, [req.params.id], (error, result) => {
+        if (error) throw error;
+        res.json(result[0] || null);
+    });
+});
+
+// API to search fundraisers based on organizer, city, or category (for search.html)
+app.get('/fundraisers/search', (req, res) => {
     const { organizer, city, category } = req.query;
-    if (organizer) {
-      sql += ' AND f.ORGANIZER LIKE ?';
-      params.push(`%${organizer}%`);
-    }
-    if (city) {
-      sql += ' AND f.CITY LIKE ?';
-      params.push(`%${city}%`);
-    }
-    if (category) {
-      sql += ' AND c.NAME LIKE ?';
-      params.push(`%${category}%`);
-    }
-  }
+    let sql = `
+        SELECT f.*, c.NAME as category_name
+        FROM FUNDRAISER f
+        JOIN CATEGORY c ON f.CATEGORY_ID = c.CATEGORY_ID
+        WHERE f.ACTIVE = true
+    `;
 
-  connection.query(sql, params, (error, results) => {
-    if (error) {
-      return res.status(500).send(error.message);
+    const conditions = [];
+    if (organizer) conditions.push(`f.ORGANIZER LIKE '%${organizer}%'`);
+    if (city) conditions.push(`f.CITY LIKE '%${city}%'`);
+    if (category) conditions.push(`c.NAME LIKE '%${category}%'`);
+
+    if (conditions.length > 0) {
+        sql += ' AND ' + conditions.join(' AND ');
     }
-    res.json(req.params.id ? results[0] || null : results);
-  });
+
+    connection.query(sql, (error, results) => {
+        if (error) throw error;
+        res.json(results);
+    });
 });
 
-// API to get all categories
+// API to get all categories (for category dropdown in search.html)
 app.get('/categories', (req, res) => {
-  const sql = 'SELECT * FROM CATEGORY';
-  connection.query(sql, (error, results) => {
-    if (error) {
-      return res.status(500).send(error.message);
-    }
-    res.json(results);
-  });
+    const sql = 'SELECT * FROM CATEGORY';
+    connection.query(sql, (error, results) => {
+        if (error) throw error;
+        res.json(results);
+    });
 });
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+    console.log(`Server running on http://localhost:${port}`);
 });
