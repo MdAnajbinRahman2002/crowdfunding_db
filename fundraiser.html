@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Fundraiser Details</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fundraiserId = urlParams.get('id');
+
+            fetch(`http://localhost:3000/fundraiser/${fundraiserId}`)
+                .then(response => response.json())
+                .then(fundraiser => {
+                    if (!fundraiser) {
+                        document.getElementById('details').innerHTML = '<p class="text-danger">Error loading fundraiser details.</p>';
+                        return;
+                    }
+
+                    document.getElementById('fundraiser-title').textContent = fundraiser.CAPTION;
+                    document.getElementById('fundraiser-organizer').textContent = fundraiser.ORGANIZER;
+                    document.getElementById('fundraiser-city').textContent = fundraiser.CITY;
+                    document.getElementById('fundraiser-category').textContent = fundraiser.category_name;
+                    document.getElementById('fundraiser-target').textContent = `$${fundraiser.TARGET_FUNDING}`;
+                    document.getElementById('fundraiser-current').textContent = `$${fundraiser.CURRENT_FUNDING}`;
+                    document.getElementById('fundraiser-status').textContent = fundraiser.ACTIVE ? 'Active' : 'Inactive';
+                })
+                .catch(error => console.error('Error loading fundraiser details:', error));
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Fundraiser Details</h1>
+        <nav>
+            <a href="/">Home</a> |
+            <a href="search.html">Search Fundraisers</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="details">
+            <h2 id="fundraiser-title"></h2>
+            <p>Organized by: <span id="fundraiser-organizer"></span></p>
+            <p>City: <span id="fundraiser-city"></span></p>
+            <p>Category: <span id="fundraiser-category"></span></p>
+            <p>Target Funding: <span id="fundraiser-target"></span></p>
+            <p>Current Funding: <span id="fundraiser-current"></span></p>
+            <p>Status: <span id="fundraiser-status"></span></p>
+        </section>
+        <button class="btn btn-success" onclick="alert('This feature is under construction.')">Donate</button>
+    </main>
+
+    <footer>
+        <p>Contact us at info@fundraising.org</p>
+    </footer>
+</body>
+</html>

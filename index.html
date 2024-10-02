@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Fundraising Platform</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Welcome to Our Fundraising Platform</h1>
+        <nav>
+            <a href="/">Home</a> |
+            <a href="search.html">Search Fundraisers</a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Active Fundraisers</h2>
+            <ul id="fundraiser-list"></ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Contact us at info@fundraising.org</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('http://localhost:3000/fundraisers')
+                .then(response => response.json())
+                .then(data => {
+                    const fundraiserList = document.getElementById('fundraiser-list');
+                    fundraiserList.innerHTML = '';
+
+                    data.forEach(fundraiser => {
+                        const listItem = `
+                            <li>
+                                <a href="fundraiser.html?id=${fundraiser.FUNDRAISER_ID}">
+                                    ${fundraiser.CAPTION} by ${fundraiser.ORGANIZER}
+                                </a>
+                            </li>
+                        `;
+                        fundraiserList.innerHTML += listItem;
+                    });
+                })
+                .catch(error => console.error('Error loading fundraisers:', error));
+        });
+    </script>
+</body>
+</html>

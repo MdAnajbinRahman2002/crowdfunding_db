@@ -1,0 +1,17 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+header, footer {
+    background-color: #f4f4f4;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+nav a {
+    margin: 0 10px;
+}
+
+#fundraiser-list {
+    margin-top: 20px;
+}
