@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Donate to Fundraiser</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style> 
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .donation-form {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .donation-form input {
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .donation-form button {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .donation-form button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .status-message {
+            margin-top: 10px;
+            font-size: 1.1em;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Donate to Fundraiser</h1>
+
+    <!-- Fundraiser details -->
+    <div id="fundraiserDetails" class="fundraiser-details"></div>
+
+    <!-- Donation Form -->
+    <form id="donationForm" class="donation-form">
+        <input type="text" id="name" placeholder="Your Name" required><br>
+        <input type="number" id="amount" placeholder="Donation Amount (minimum 5 AUD)" required min="5"><br>
+        <button type="submit" id="donateButton">Submit my donation</button>
+    </form>
+
+    <p id="statusMessage" class="status-message"></p> <!-- For status updates -->
+
+    <script>
+        const fundraiserId = new URLSearchParams(window.location.search).get('id');
+
+        // Fetch the fundraiser details
+        function fetchFundraiserDetails() {
+            fetch(`http://localhost:3000/fundraiser/${fundraiserId}`)
+                .then(response => response.json())
+                .then(fundraiser => {
+                    if (!fundraiser) {
+                        document.getElementById('fundraiserDetails').innerHTML = '<p class="text-danger">Error loading fundraiser details.</p>';
+                        return;
+                    }
+
+                    // Populate the fundraiser details
+                    document.getElementById('fundraiserDetails').innerHTML = `
+                        <h2>${fundraiser.CAPTION}</h2>
+                        <p><strong>Organized by:</strong> ${fundraiser.ORGANIZER}</p>
+                        <p><strong>Target Funding:</strong> $${fundraiser.TARGET_FUNDING}</p>
+                        <p><strong>Current Funding:</strong> $${fundraiser.CURRENT_FUNDING}</p>
+                        <p><strong>City:</strong> ${fundraiser.CITY}</p>
+                        <p><strong>Category:</strong> ${fundraiser.category_name}</p>
+                        <p><strong>Status:</strong> ${fundraiser.ACTIVE ? 'Active' : 'Inactive'}</p>
+                    `;
+                })
+                .catch(error => {
+                    console.error("Error fetching fundraiser:", error);
+                    document.getElementById('fundraiserDetails').innerHTML = `<p style="color: red;">An error occurred: ${error.message}</p>`;
+                });
+        }
+
+        // Handle the form submission
+        document.getElementById('donationForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            
+            const name = document.getElementById('name').value;
+            const amount = document.getElementById('amount').value;
+            const donateButton = document.getElementById('donateButton');
+            const statusMessage = document.getElementById('statusMessage');
+
+            // Disable the donate button to prevent multiple submissions
+            donateButton.disabled = true;
+            statusMessage.textContent = '';
+
+            // Check for minimum donation amount
+            if (amount < 5) {
+                alert('Minimum donation amount is 5 AUD.');
+                donateButton.disabled = false; // Re-enable the button
+                return;
+            }
+
+            // Send the POST request to the server
+            fetch(`http://localhost:3000/donations`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date: new Date().toISOString().split('T')[0], amount, giver: name, fundraiserId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(`Thank you for your donation!`);
+                document.getElementById('donationForm').reset(); // Clear the form
+                statusMessage.textContent = 'Donation successful!';
+                donateButton.disabled = false; // Re-enable the button
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                statusMessage.textContent = 'An error occurred while processing your donation.';
+                donateButton.disabled = false; // Re-enable the button in case of an error
+            });
+        });
+
+        // Fetch the fundraiser details on page load
+        document.addEventListener('DOMContentLoaded', fetchFundraiserDetails);
+    </script>
+</div>
+
+</body>
+</html>

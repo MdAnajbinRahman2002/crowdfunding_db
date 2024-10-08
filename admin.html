@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Manage Fundraisers</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            padding: 10px;
+        }
+
+        form {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Manage Fundraisers</h1>
+
+    <!-- Table to display all fundraisers -->
+    <table id="fundraiserTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Organizer</th>
+                <th>Description</th>
+                <th>Goal</th>
+                <th>City</th>
+                <th>Category</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Form to create a new fundraiser -->
+    <h2>Add New Fundraiser</h2>
+    <form id="addFundraiserForm">
+        <label for="fundraiserId">Fundraiser ID:</label>
+        <input type="number" id="fundraiserId" required><br>
+
+        <label for="organizer">Organizer:</label>
+        <input type="text" id="organizer" required><br>
+
+        <label for="description">Description:</label>
+        <input type="text" id="description" required><br>
+
+        <label for="goal">Goal:</label>
+        <input type="number" id="goal" required><br>
+
+        <label for="city">City:</label>
+        <input type="text" id="city" required><br>
+
+        <label for="categoryId">Category ID:</label>
+        <input type="number" id="categoryId" required><br>
+
+        <button type="submit">Add Fundraiser</button>
+    </form>
+
+    <!-- Form to update an existing fundraiser -->
+    <h2>Update Fundraiser</h2>
+    <form id="updateFundraiserForm">
+        <label for="updateId">Fundraiser ID:</label>
+        <input type="number" id="updateId" required><br>
+
+        <label for="updateOrganizer">Organizer:</label>
+        <input type="text" id="updateOrganizer" required><br>
+
+        <label for="updateDescription">Description:</label>
+        <input type="text" id="updateDescription" required><br>
+
+        <label for="updateGoal">Goal:</label>
+        <input type="number" id="updateGoal" required><br>
+
+        <label for="updateCity">City:</label>
+        <input type="text" id="updateCity" required><br>
+
+        <label for="updateCategoryId">Category ID:</label>
+        <input type="number" id="updateCategoryId" required><br>
+
+        <button type="submit">Update Fundraiser</button>
+    </form>
+
+    <script>
+        const apiUrl = 'http://localhost:3000';
+
+        // Fetch all fundraisers and display them in the table
+        function fetchFundraisers() {
+            fetch(`${apiUrl}/fundraisers`)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#fundraiserTable tbody');
+                    tableBody.innerHTML = '';
+
+                    data.forEach(fundraiser => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${fundraiser.FUNDRAISER_ID}</td>
+                            <td>${fundraiser.ORGANIZER}</td>
+                            <td>${fundraiser.CAPTION}</td>
+                            <td>${fundraiser.TARGET_FUNDING}</td>
+                            <td>${fundraiser.CITY}</td>
+                            <td>${fundraiser.CATEGORY_ID}</td>
+                            <td>
+                                <button onclick="deleteFundraiser(${fundraiser.FUNDRAISER_ID})">Delete</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error fetching fundraisers:', error));
+        }
+
+        // Add a new fundraiser
+        document.getElementById('addFundraiserForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const fundraiserId = document.getElementById('fundraiserId').value;
+            const organizer = document.getElementById('organizer').value;
+            const description = document.getElementById('description').value;
+            const goal = document.getElementById('goal').value;
+            const city = document.getElementById('city').value;
+            const categoryId = document.getElementById('categoryId').value;
+
+            fetch(`${apiUrl}/fundraisers`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fundraiserId,
+                    organizer,
+                    caption: description,
+                    target_funding: goal,
+                    city,
+                    categoryId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                fetchFundraisers(); // Refresh the fundraiser list
+            })
+            .catch(error => console.error('Error adding fundraiser:', error));
+        });
+
+        // Update an existing fundraiser
+        document.getElementById('updateFundraiserForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById('updateId').value;
+            const organizer = document.getElementById('updateOrganizer').value;
+            const description = document.getElementById('updateDescription').value;
+            const goal = document.getElementById('updateGoal').value;
+            const city = document.getElementById('updateCity').value;
+            const categoryId = document.getElementById('updateCategoryId').value;
+
+            fetch(`${apiUrl}/fundraisers/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    organizer,
+                    caption: description,
+                    target_funding: goal,
+                    city,
+                    categoryId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                fetchFundraisers(); // Refresh the fundraiser list
+            })
+            .catch(error => console.error('Error updating fundraiser:', error));
+        });
+
+        // Delete a fundraiser
+        function deleteFundraiser(id) {
+            if (confirm('Are you sure you want to delete this fundraiser?')) {
+                fetch(`${apiUrl}/fundraisers/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    fetchFundraisers(); // Refresh the fundraiser list
+                })
+                .catch(error => console.error('Error deleting fundraiser:', error));
+            }
+        }
+
+        // Initial fetch of fundraisers
+        fetchFundraisers();
+    </script>
+</body>
+</html>
