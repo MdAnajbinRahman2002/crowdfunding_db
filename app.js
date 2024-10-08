@@ -53,7 +53,6 @@ app.get('/fundraiser/:id/donations', (req, res) => {
         res.json(results);
     });
 });
-
 // Add a new donation
 app.post('/donations', (req, res) => {
     const { date, amount, giver, fundraiserId } = req.body;
