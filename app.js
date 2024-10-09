@@ -86,6 +86,21 @@ app.post('/fundraisers', (req, res) => {
         res.json({ message: 'Fundraiser added successfully', id: results.insertId });
     });
 });
+// Delete a fundraiser by ID
+app.delete('/fundraiser/:id', (req, res) => {
+    const { id } = req.params;
+    const query = 'DELETE FROM FUNDRAISER WHERE FUNDRAISER_ID = ?';
+    
+    connection.query(query, [id], (err, results) => {
+        if (err) {
+            return res.status(500).send(err);
+        }
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: 'Fundraiser not found' });
+        }
+        res.json({ message: 'Fundraiser deleted successfully' });
+    });
+});
 
 // **New: Get a specific fundraiser by ID**
 app.get('/fundraiser/:id', (req, res) => {

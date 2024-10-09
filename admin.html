@@ -9,99 +9,86 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
+        body {
+            margin: 20px;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
-
         table, th, td {
             border: 1px solid black;
             padding: 10px;
         }
-
         form {
             margin: 20px 0;
+        }
+        .form-control {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>Manage Fundraisers</h1>
+    <div class="container">
+        <h1 class="text-center mb-4">Manage Fundraisers</h1>
 
-    <!-- Table to display all fundraisers -->
-    <table id="fundraiserTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Organizer</th>
-                <th>Description</th>
-                <th>Goal</th>
-                <th>City</th>
-                <th>Category</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+        <!-- Table to display all fundraisers -->
+        <div class="table-responsive">
+            <table id="fundraiserTable" class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Organizer</th>
+                        <th>Description</th>
+                        <th>Goal</th>
+                        <th>City</th>
+                        <th>Category</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-    <!-- Form to create a new fundraiser -->
-    <h2>Add New Fundraiser</h2>
-    <form id="addFundraiserForm">
-        <label for="fundraiserId">Fundraiser ID:</label>
-        <input type="number" id="fundraiserId" required><br>
+        <!-- Form to create a new fundraiser -->
+        <h2 class="mt-4">Add New Fundraiser</h2>
+        <form id="addFundraiserForm" class="form-inline">
+            <input type="number" id="fundraiserId" class="form-control" placeholder="Fundraiser ID" required>
+            <input type="text" id="organizer" class="form-control" placeholder="Organizer" required>
+            <input type="text" id="description" class="form-control" placeholder="Description" required>
+            <input type="number" id="goal" class="form-control" placeholder="Goal" required>
+            <input type="text" id="city" class="form-control" placeholder="City" required>
+            <input type="number" id="categoryId" class="form-control" placeholder="Category ID" required>
+            <button type="submit" class="btn btn-primary">Add Fundraiser</button>
+        </form>
 
-        <label for="organizer">Organizer:</label>
-        <input type="text" id="organizer" required><br>
+        <!-- Form to update an existing fundraiser -->
+        <h2 class="mt-4">Update Fundraiser</h2>
+        <form id="updateFundraiserForm" class="form-inline">
+            <input type="number" id="updateId" class="form-control" placeholder="Fundraiser ID" required>
+            <input type="text" id="updateOrganizer" class="form-control" placeholder="Organizer" required>
+            <input type="text" id="updateDescription" class="form-control" placeholder="Description" required>
+            <input type="number" id="updateGoal" class="form-control" placeholder="Goal" required>
+            <input type="text" id="updateCity" class="form-control" placeholder="City" required>
+            <input type="number" id="updateCategoryId" class="form-control" placeholder="Category ID" required>
+            <button type="submit" class="btn btn-warning">Update Fundraiser</button>
+        </form>
 
-        <label for="description">Description:</label>
-        <input type="text" id="description" required><br>
-
-        <label for="goal">Goal:</label>
-        <input type="number" id="goal" required><br>
-
-        <label for="city">City:</label>
-        <input type="text" id="city" required><br>
-
-        <label for="categoryId">Category ID:</label>
-        <input type="number" id="categoryId" required><br>
-
-        <button type="submit">Add Fundraiser</button>
-    </form>
-
-    <!-- Form to update an existing fundraiser -->
-    <h2>Update Fundraiser</h2>
-    <form id="updateFundraiserForm">
-        <label for="updateId">Fundraiser ID:</label>
-        <input type="number" id="updateId" required><br>
-
-        <label for="updateOrganizer">Organizer:</label>
-        <input type="text" id="updateOrganizer" required><br>
-
-        <label for="updateDescription">Description:</label>
-        <input type="text" id="updateDescription" required><br>
-
-        <label for="updateGoal">Goal:</label>
-        <input type="number" id="updateGoal" required><br>
-
-        <label for="updateCity">City:</label>
-        <input type="text" id="updateCity" required><br>
-
-        <label for="updateCategoryId">Category ID:</label>
-        <input type="number" id="updateCategoryId" required><br>
-
-        <button type="submit">Update Fundraiser</button>
-    </form>
+    </div>
 
     <script>
-        const apiUrl = 'http://localhost:3000';
+        const apiUrl = 'http://localhost:3000'; // API base URL
 
-        // Fetch all fundraisers and display them in the table
+        // Fetch and display all fundraisers in the table
         function fetchFundraisers() {
             fetch(`${apiUrl}/fundraisers`)
                 .then(response => response.json())
                 .then(data => {
                     const tableBody = document.querySelector('#fundraiserTable tbody');
-                    tableBody.innerHTML = '';
+                    tableBody.innerHTML = ''; // Clear previous table rows
 
+                    // Populate table with fundraisers
                     data.forEach(fundraiser => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -112,7 +99,7 @@
                             <td>${fundraiser.CITY}</td>
                             <td>${fundraiser.CATEGORY_ID}</td>
                             <td>
-                                <button onclick="deleteFundraiser(${fundraiser.FUNDRAISER_ID})">Delete</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteFundraiser(${fundraiser.FUNDRAISER_ID})">Delete</button>
                             </td>
                         `;
                         tableBody.appendChild(row);
@@ -123,7 +110,7 @@
 
         // Add a new fundraiser
         document.getElementById('addFundraiserForm').addEventListener('submit', function (e) {
-            e.preventDefault();
+            e.preventDefault(); // Prevent default form submission behavior
 
             const fundraiserId = document.getElementById('fundraiserId').value;
             const organizer = document.getElementById('organizer').value;
@@ -132,6 +119,7 @@
             const city = document.getElementById('city').value;
             const categoryId = document.getElementById('categoryId').value;
 
+            // Send POST request to create a new fundraiser
             fetch(`${apiUrl}/fundraisers`, {
                 method: 'POST',
                 headers: {
@@ -149,14 +137,15 @@
             .then(response => response.json())
             .then(data => {
                 alert(data.message);
-                fetchFundraisers(); // Refresh the fundraiser list
+                fetchFundraisers(); // Refresh fundraiser list
+                document.getElementById('addFundraiserForm').reset(); // Reset form fields
             })
             .catch(error => console.error('Error adding fundraiser:', error));
         });
 
         // Update an existing fundraiser
         document.getElementById('updateFundraiserForm').addEventListener('submit', function (e) {
-            e.preventDefault();
+            e.preventDefault(); // Prevent default form submission behavior
 
             const id = document.getElementById('updateId').value;
             const organizer = document.getElementById('updateOrganizer').value;
@@ -165,6 +154,7 @@
             const city = document.getElementById('updateCity').value;
             const categoryId = document.getElementById('updateCategoryId').value;
 
+            // Send PUT request to update the fundraiser
             fetch(`${apiUrl}/fundraisers/${id}`, {
                 method: 'PUT',
                 headers: {
@@ -181,7 +171,8 @@
             .then(response => response.json())
             .then(data => {
                 alert(data.message);
-                fetchFundraisers(); // Refresh the fundraiser list
+                fetchFundraisers(); // Refresh fundraiser list
+                document.getElementById('updateFundraiserForm').reset(); // Reset form fields
             })
             .catch(error => console.error('Error updating fundraiser:', error));
         });
@@ -195,13 +186,13 @@
                 .then(response => response.json())
                 .then(data => {
                     alert(data.message);
-                    fetchFundraisers(); // Refresh the fundraiser list
+                    fetchFundraisers(); // Refresh fundraiser list after deletion
                 })
                 .catch(error => console.error('Error deleting fundraiser:', error));
             }
         }
 
-        // Initial fetch of fundraisers
+        // Initial fetch of all fundraisers when page loads
         fetchFundraisers();
     </script>
 </body>
